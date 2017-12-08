@@ -133,8 +133,8 @@
                         var request = {
                             what: "call",
                             options: {
-                                force_hw_vcodec: true,
-                                vformat: "63" //720p 60ps
+                                force_hw_vcodec: false,
+                                vformat: "60" //720p 60ps
                             }
                         };
                         ws.send(JSON.stringify(request));
