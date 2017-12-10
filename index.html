@@ -69,7 +69,7 @@
 
                 event.channel.onopen = function () {
                     console.log("Data Channel is open!");
-                    intervalID = setInterval(send_keys_down, 20);
+                    intervalID = setInterval(send_keys_down, 100);
                 };
 
                 event.channel.onerror = function (error) {
