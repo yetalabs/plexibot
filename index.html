@@ -412,7 +412,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                var move = convert_keycode_to_valid_move(e);
+                var move = convert_keycode_to_valid_move(e.keyCode);
                 if (move) {
                   delete keys_down[move];
                 }
