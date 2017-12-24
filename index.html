@@ -359,8 +359,7 @@
                 console.log("local data channel closed");
             }
 
-            function convert_keycode_to_valid_move(e) {
-              var keycode = e.keycode;
+            function convert_keycode_to_valid_move(keycode) {
 
               // WASD
               if (keycode == 87) {
@@ -374,11 +373,6 @@
               }
               if (keycode == 68) {
                 return "d";
-              }
-
-              // Turbo Boost
-              if (e.shiftKey) {
-                return "b"
               }
 
               //ARROW KEYS
@@ -406,6 +400,11 @@
                 if (move) {
                   keys_down[move] = true;
                 }
+
+                // Turbo Boost
+                if (e.shiftKey) {
+                  keys_down["b"] = true;
+                }
             }
             ;
 
@@ -416,6 +415,11 @@
                 var move = convert_keycode_to_valid_move(e);
                 if (move) {
                   delete keys_down[move];
+                }
+
+                // Turbo Boost
+                if (!e.shiftKey) {
+                  delete keys_down["b"];
                 }
             }
             ;
