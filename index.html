@@ -396,7 +396,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                var move = convert_keycode_to_valid_move(e);
+                var move = convert_keycode_to_valid_move(e.keyCode);
                 if (move) {
                   keys_down[move] = true;
                 }
