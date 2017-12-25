@@ -123,7 +123,7 @@
                     //document.getElementById("stop").disabled = false;
                     //document.getElementById("start").disabled = true;
                     document.documentElement.style.cursor = 'wait';
-                    ws = new WebSocket('wss://' + signalling_server_address + '/stream/webrtc');
+                    ws = new WebSocket('ws://' + signalling_server_address + '/stream/webrtc');
 
                     function call(stream) {
                         createPeerConnection();
