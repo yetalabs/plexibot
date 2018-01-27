@@ -1,0 +1,172 @@
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Plexibot</title>
+        <script src="//media.twiliocdn.com/sdk/js/video/v1/twilio-video.min.js"></script>
+
+        <script type="text/javascript">
+          var keys_down = {};
+          var didSendEmpty = true;
+          var intervalID = null;
+
+          var token = "";
+          
+          var dataTrack = new Twilio.Video.LocalDataTrack();
+          dataTrack.maxRetransmits = 2; //Never resend data because we send it often enough..
+
+          Twilio.Video.connect(token, {audio: true, tracks: [dataTrack], name:'robot0_room'}).then(function(room) {
+            console.log('Successfully joined a Room: ', room);
+            // Log any Participants already connected to the Room
+            room.participants.forEach(participant => {
+              console.log('Participant "%s" is already connected to the Room', participant.identity);
+            });
+
+            room.on('participantConnected', function(participant) {
+              console.log('A new remote Participant connected: ', participant);
+            })
+
+            room.once('participantDisconnected', participant => {
+              console.log('Participant "%s" has disconnected from Room', participant.identity);
+              clearInterval(intervalID);
+            });
+            intervalID = setInterval(send_keys_down, 50);
+
+
+            // When a Participant adds a Track, attach it to the DOM.
+            room.on('trackAdded', function(track, participant) {
+              console.log(participant.identity + " added track: " + track.kind);
+              if (track.kind != 'data') {
+                document.getElementById('remote-media').appendChild(track.attach());
+              }
+            });
+
+            // When a Participant removes a Track, detach it from the DOM.
+            room.on('trackRemoved', function(track, participant) {
+              console.log(participant.identity + " removed track: " + track.kind);
+              track.detach().forEach(function(detachedElement) {
+                detachedElement.remove();
+              });
+            });
+
+
+          }, function(error) {
+            console.error('Unable to connect to Room: ' +  error.message);
+          });
+
+          function convert_keycode_to_valid_move(keycode) {
+            // WASD
+            if (keycode == 87) {
+              return "w";
+            }
+            if (keycode == 83) {
+              return "s";
+            }
+            if (keycode == 65) {
+              return "a";
+            }
+            if (keycode == 68) {
+              return "d";
+            }
+
+            //ARROW KEYS
+            if (keycode == 37) {
+              return "l";
+            }
+            if (keycode == 38) {
+              return "u";
+            }
+            if (keycode == 39) {
+              return "r";
+            }
+            if (keycode == 40) {
+              return "t";
+            }
+
+            return null;
+          }
+
+          function keydown(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              var move = convert_keycode_to_valid_move(e.keyCode);
+              if (move) {
+                keys_down[move] = true;
+              }
+          };
+
+          function keyup(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              var move = convert_keycode_to_valid_move(e.keyCode);
+              if (move) {
+                delete keys_down[move];
+              }
+          };
+
+          function send_keys_down() {
+            var isEmpty = Object.keys(keys_down).length === 0;
+
+            if (isEmpty && didSendEmpty) {
+              return;
+            }
+
+            var timestamp = Date.now();
+            var msg = {n: timestamp, c: Object.keys(keys_down)}
+
+            var msg_str = JSON.stringify(msg)
+            console.log("SENDING=" + msg_str);
+            dataTrack.send(msg_str);
+
+            if (isEmpty) {
+              didSendEmpty = true;
+            } else{
+              didSendEmpty = false;
+            }
+          };
+
+          window.onload = function () {
+            window.addEventListener('keydown', keydown, true);
+            window.addEventListener('keyup', keyup, true);
+          };
+
+        </script>
+        <style>
+            #container {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: flex-end;
+            }
+            video {
+                background: #eee none repeat scroll 0 0;
+                border: 1px solid #aaa;
+            }
+            .overlayWrapper {
+                position: relative;
+            }
+            .overlayWrapper .overlay {
+                position: absolute;
+                top: 0;
+                left: 5px;
+            }
+            p {
+                margin: 0.125em;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="remote-media">
+        </div>
+        <br>
+        <div id="commands">
+            <!--<button id="start" style="background-color: green; color: white" onclick="start();">Connect</button>-->
+            <!--<button disabled id="stop" style="background-color: red; color: white" onclick="stop();">Disconnect</button>-->
+            Move Robot: WASD. Move Camera: Arrow Keys
+        </div>
+        <br>
+    </body>
+</html>
